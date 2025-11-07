@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+  <title>Tower Blocks</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css?family=Comfortaa");
+
+    html,
+    body {
+      margin: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      position: relative;
+      font-family: "Comfortaa", cursive;
+    }
+
+    #container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #container #score {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 10vh;
+      transition: transform 0.5s ease;
+      color: #333344;
+      transform: translatey(-200px) scale(1);
+    }
+
+    #container #game {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    #container .game-over {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 85%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #container .game-over * {
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+      transform: translatey(-50px);
+      color: #333344;
+    }
+
+    #container .game-over h2 {
+      margin: 0;
+      padding: 0;
+      font-size: 40px;
+    }
+
+    #container .game-ready {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    #container .game-ready #start-button {
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+      transform: translatey(-50px);
+      border: 3px solid #333344;
+      padding: 10px 20px;
+      background-color: transparent;
+      color: #333344;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    #container #instructions {
+      position: absolute;
+      width: 100%;
+      top: 16vh;
+      left: 0;
+      text-align: center;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+    }
+
+    #container #instructions.hide {
+      opacity: 0 !important;
+    }
+
+    #container.playing #score,
+    #container.resetting #score {
+      transform: translatey(0px) scale(1);
+    }
+
+    #container.playing #instructions {
+      opacity: 1;
+    }
+
+    #container.ready .game-ready #start-button {
+      opacity: 1;
+      transform: translatey(0);
+    }
+
+    #container.ended #score {
+      transform: translatey(6vh) scale(1.5);
+    }
+
+    #container.ended .game-over * {
+      opacity: 1;
+      transform: translatey(0);
+    }
+
+    #container.ended .game-over p {
+      transition-delay: 0.3s;
+    }
+
+    /* Panel styling */
+    .social-panel {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 250px;
+      max-width: 90%;
+      background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      z-index: 99999;
+      transform: translateY(120%);
+      opacity: 0;
+      pointer-events: auto;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .social-panel.open {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .social-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .social-header span {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .social-icons {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .social-icons a img {
+      width: 36px;
+      height: 36px;
+      transition: transform 0.2s ease;
+    }
+
+    .social-icons a img:hover {
+      transform: scale(1.2);
+    }
+
+    .open-social {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 99999;
+      background: #333344;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <div id="game"></div>
+    <div id="score">0</div>
+    <div id="instructions">Blokni qo‘yish uchun ekranga bosing</div>
+    <div class="game-over">
+      <h2>O‘yin tugadi</h2>
+      <p></p>
+      <p>Qayta boshlash uchun ekranga bosing</p>
+    </div>
+    <div class="game-ready">
+      <div id="start-button">Boshlash</div>
+      <div></div>
+    </div>
+  </div>
+
+ <!-- Emoji tugma -->
+  <button class="open-social">📢</button>
+
+  <!-- Social panel -->
+  <div class="social-panel">
+    <div class="social-header">
+      <span> 📢 Bizni kuzatib boring</span>
+      <button class="close-btn">✖</button>
+    </div>
+    <div class="social-icons">
+      <a href="https://instagram.com/reyzer2112" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png"></a>
+      <a href="https://www.youtube.com/@ReyZer-2112" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png"></a>
+      <a href="https://www.snapchat.com/add/reyzer2112" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/2111/2111703.png"></a>
+      <a href="https://www.roblox.com/users/4669071068/profile" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/743/743927.png"></a>
+      <a href="https://t.me/ReyZer2112" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png"></a>
+      <a href="http://discord.gg/reyzer2112" target="_blank"><img
+          src="https://cdn-icons-png.flaticon.com/512/2111/2111370.png"></a>
+    </div>
+  </div>
+
+
+<style>
+  /* Faqat emoji tugmasini nusxalashni bloklash */
+  .open-social {
+    -webkit-user-select: none;  /* Chrome, Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE10+ */
+    user-select: none;          /* standart */
+  }
+</style>
+
+<script>
+  // "Copy" hodisasini faqat emoji tugmasida bloklash
+  const openBtn = document.querySelector('.open-social');
+
+  openBtn.addEventListener('copy', (e) => {
+    e.preventDefault(); // nusxa olishni to‘xtatadi
+    alert("📢 Bu tugmani nusxa olish mumkin emas!");
+  });
+</script>
+
+
+<style>
+  /* Emoji tugma - shaffof fon va kichik */
+  .open-social {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    font-size: 30px;       /* kichikroq emoji */
+    border: none;
+    cursor: pointer;
+    background: transparent; /* mutlaqo shaffof */
+    padding: 8px;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+
+  .open-social:hover {
+    transform: scale(1.2); /* bosilganda biroz kattalashish */
+  }
+
+  /* Panel */
+  .social-panel {
+    position: fixed;
+    right: 20px;
+    bottom: 60px;
+    width: 250px;
+    max-width: 90%;
+    background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-align: center;
+    z-index: 9999;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+
+  .social-panel.open {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .social-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .social-header span {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .social-icons {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .social-icons a img {
+    width: 36px;
+    height: 36px;
+    transition: transform 0.2s ease;
+  }
+
+  .social-icons a img:hover {
+    transform: scale(1.2);
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const panel = document.querySelector('.social-panel');
+  const openBtn = document.querySelector('.open-social');
+  const closeBtn = document.querySelector('.close-btn');
+  const gameContainer = document.getElementById('container');
+
+  // “📢” tugmasi bosilganda
+  openBtn.addEventListener('click', (e) => {
+    e.stopPropagation();       // o'yinga yetmasin
+    panel.classList.add('open');
+    gameContainer.style.pointerEvents = 'none';  // o'yinni bloklash
+  });
+
+  // Panel yopish tugmasi
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.remove('open');
+    gameContainer.style.pointerEvents = 'auto';  // o'yinni qayta ochish
+  });
+
+  // Panel ichidagi bosishlar ham o'yinga yetmasin
+  panel.addEventListener('click', (e) => e.stopPropagation());
+});
+</script>
+
+
+</script>
+
+  <!-- Scriptlar -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js'></script>
+
+  <script>
+    "use strict";
+    console.clear();
+
+    // ===================== STAGE =====================
+    class Stage {
+      constructor() {
+        this.container = document.getElementById('game');
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setClearColor('#D0CBC7', 1);
+        this.container.appendChild(this.renderer.domElement);
+
+        this.scene = new THREE.Scene();
+
+        let aspect = window.innerWidth / window.innerHeight;
+        let d = 20;
+        this.camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, -100, 1000);
+        this.camera.position.set(2, 2, 2);
+        this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        this.light = new THREE.DirectionalLight(0xffffff, 0.5);
+        this.light.position.set(0, 499, 0);
+        this.scene.add(this.light);
+
+        this.softLight = new THREE.AmbientLight(0xffffff, 0.4);
+        this.scene.add(this.softLight);
+
+        window.addEventListener('resize', () => this.onResize());
+        this.onResize();
+      }
+
+      setCamera(y, speed = 0.3) {
+        TweenLite.to(this.camera.position, speed, { y: y + 4, ease: Power1.easeInOut });
+        TweenLite.to(this.camera.lookAt, speed, { y: y, ease: Power1.easeInOut });
+      }
+
+      add(elem) { this.scene.add(elem); }
+      remove(elem) { this.scene.remove(elem); }
+      render() { this.renderer.render(this.scene, this.camera); }
+
+      onResize() {
+        let viewSize = 30;
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.camera.left = window.innerWidth / -viewSize;
+        this.camera.right = window.innerWidth / viewSize;
+        this.camera.top = window.innerHeight / viewSize;
+        this.camera.bottom = window.innerHeight / -viewSize;
+        this.camera.updateProjectionMatrix();
+      }
+    }
+
+    // ===================== BLOCK =====================
+    class Block {
+      constructor(block) {
+        this.STATES = { ACTIVE: 'active', STOPPED: 'stopped', MISSED: 'missed' };
+        this.MOVE_AMOUNT = 12;
+        this.dimension = { width: 0, height: 0, depth: 0 };
+        this.position = { x: 0, y: 0, z: 0 };
+        this.targetBlock = block;
+        this.index = (this.targetBlock ? this.targetBlock.index : 0) + 1;
+        this.workingPlane = this.index % 2 ? 'x' : 'z';
+        this.workingDimension = this.index % 2 ? 'width' : 'depth';
+
+        this.dimension.width = this.targetBlock ? this.targetBlock.dimension.width : 10;
+        this.dimension.height = this.targetBlock ? this.targetBlock.dimension.height : 2;
+        this.dimension.depth = this.targetBlock ? this.targetBlock.dimension.depth : 10;
+
+        this.position.x = this.targetBlock ? this.targetBlock.position.x : 0;
+        this.position.y = this.dimension.height * this.index;
+        this.position.z = this.targetBlock ? this.targetBlock.position.z : 0;
+
+        this.colorOffset = this.targetBlock ? this.targetBlock.colorOffset : Math.round(Math.random() * 100);
+        this.color = !this.targetBlock ? 0x333344 : new THREE.Color(
+          (Math.sin(0.3 * (this.index + this.colorOffset)) * 55 + 200) / 255,
+          (Math.sin(0.3 * (this.index + this.colorOffset) + 2) * 55 + 200) / 255,
+          (Math.sin(0.3 * (this.index + this.colorOffset) + 4) * 55 + 200) / 255
+        );
+
+        this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED;
+        this.speed = -0.1 - (this.index * 0.005);
+        if (this.speed < -4) this.speed = -4;
+        this.direction = this.speed;
+
+        let geometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
+        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
+        this.material = new THREE.MeshToonMaterial({ color: this.color, shading: THREE.FlatShading });
+        this.mesh = new THREE.Mesh(geometry, this.material);
+        this.mesh.position.set(this.position.x, this.position.y, this.position.z);
+
+        if (this.state == this.STATES.ACTIVE) {
+          this.position[this.workingPlane] = Math.random() > 0.5 ? -this.MOVE_AMOUNT : this.MOVE_AMOUNT;
+        }
+      }
+
+      reverseDirection() {
+        this.direction = this.direction > 0 ? this.speed : Math.abs(this.speed);
+      }
+
+      place() {
+        this.state = this.STATES.STOPPED;
+        let overlap = this.targetBlock.dimension[this.workingDimension] - Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane]);
+        let blocksToReturn = { plane: this.workingPlane, direction: this.direction };
+
+        if (this.dimension[this.workingDimension] - overlap < 0.3) {
+          overlap = this.dimension[this.workingDimension];
+          blocksToReturn.bonus = true;
+          this.position.x = this.targetBlock.position.x;
+          this.position.z = this.targetBlock.position.z;
+          this.dimension.width = this.targetBlock.dimension.width;
+          this.dimension.depth = this.targetBlock.dimension.depth;
+        }
+
+        if (overlap > 0) {
+          let choppedDimensions = { ...this.dimension };
+          choppedDimensions[this.workingDimension] -= overlap;
+          this.dimension[this.workingDimension] = overlap;
+
+          let placedGeometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
+          placedGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
+          let placedMesh = new THREE.Mesh(placedGeometry, this.material);
+
+          let choppedGeometry = new THREE.BoxGeometry(choppedDimensions.width, choppedDimensions.height, choppedDimensions.depth);
+          choppedGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(choppedDimensions.width / 2, choppedDimensions.height / 2, choppedDimensions.depth / 2));
+          let choppedMesh = new THREE.Mesh(choppedGeometry, this.material);
+
+          let choppedPosition = { ...this.position };
+          if (this.position[this.workingPlane] < this.targetBlock.position[this.workingPlane]) {
+            this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane];
+          } else {
+            choppedPosition[this.workingPlane] += overlap;
+          }
+
+          placedMesh.position.set(this.position.x, this.position.y, this.position.z);
+          choppedMesh.position.set(choppedPosition.x, choppedPosition.y, choppedPosition.z);
+
+          blocksToReturn.placed = placedMesh;
+          if (!blocksToReturn.bonus) blocksToReturn.chopped = choppedMesh;
+        } else this.state = this.STATES.MISSED;
+
+        this.dimension[this.workingDimension] = overlap;
+        return blocksToReturn;
+      }
+
+      tick() {
+        if (this.state == this.STATES.ACTIVE) {
+          let value = this.position[this.workingPlane];
+          if (value > this.MOVE_AMOUNT || value < -this.MOVE_AMOUNT) this.reverseDirection();
+          this.position[this.workingPlane] += this.direction;
+          this.mesh.position[this.workingPlane] = this.position[this.workingPlane];
+        }
+      }
+    }
+
+    // ===================== GAME =====================
+    class Game {
+      constructor() {
+        this.STATES = { LOADING: 'loading', PLAYING: 'playing', READY: 'ready', ENDED: 'ended', RESETTING: 'resetting' };
+        this.blocks = [];
+        this.state = this.STATES.LOADING;
+        this.stage = new Stage();
+        this.mainContainer = document.getElementById('container');
+        this.scoreContainer = document.getElementById('score');
+        this.startButton = document.getElementById('start-button');
+        this.instructions = document.getElementById('instructions');
+        this.scoreContainer.innerHTML = '0';
+
+        this.newBlocks = new THREE.Group();
+        this.placedBlocks = new THREE.Group();
+        this.choppedBlocks = new THREE.Group();
+
+        this.stage.add(this.newBlocks);
+        this.stage.add(this.placedBlocks);
+        this.stage.add(this.choppedBlocks);
+
+        this.addBlock();
+        this.tick();
+        this.updateState(this.STATES.READY);
+
+        document.addEventListener('keydown', e => { if (e.keyCode == 32) this.onAction(); });
+        document.addEventListener('click', e => this.onAction());
+      }
+
+      updateState(newState) {
+        for (let key in this.STATES) this.mainContainer.classList.remove(this.STATES[key]);
+        this.mainContainer.classList.add(newState);
+        this.state = newState;
+      }
+
+      onAction() {
+        switch (this.state) {
+          case this.STATES.READY: this.startGame(); break;
+          case this.STATES.PLAYING: this.placeBlock(); break;
+          case this.STATES.ENDED: this.restartGame(); break;
+        }
+      }
+
+      startGame() {
+        if (this.state != this.STATES.PLAYING) {
+          this.scoreContainer.innerHTML = '0';
+          this.updateState(this.STATES.PLAYING);
+          this.addBlock();
+        }
+      }
+
+      restartGame() {
+        this.updateState(this.STATES.RESETTING);
+        let oldBlocks = this.placedBlocks.children;
+        let removeSpeed = 0.2;
+        let delayAmount = 0.02;
+        for (let i = 0; i < oldBlocks.length; i++) {
+          TweenLite.to(oldBlocks[i].scale, removeSpeed, { x: 0, y: 0, z: 0, delay: (oldBlocks.length - i) * delayAmount, ease: Power1.easeIn, onComplete: () => this.placedBlocks.remove(oldBlocks[i]) });
+          TweenLite.to(oldBlocks[i].rotation, removeSpeed, { y: 0.5, delay: (oldBlocks.length - i) * delayAmount, ease: Power1.easeIn });
+        }
+        let cameraMoveSpeed = removeSpeed * 2 + (oldBlocks.length * delayAmount);
+        this.stage.setCamera(2, cameraMoveSpeed);
+        let countdown = { value: this.blocks.length - 1 };
+        TweenLite.to(countdown, cameraMoveSpeed, { value: 0, onUpdate: () => { this.scoreContainer.innerHTML = String(Math.round(countdown.value)); } });
+        this.blocks = this.blocks.slice(0, 1);
+        setTimeout(() => { this.startGame(); }, cameraMoveSpeed * 1000);
+      }
+
+      placeBlock() {
+        let currentBlock = this.blocks[this.blocks.length - 1];
+        let newBlocks = currentBlock.place();
+        this.newBlocks.remove(currentBlock.mesh);
+        if (newBlocks.placed) this.placedBlocks.add(newBlocks.placed);
+        if (newBlocks.chopped) {
+          this.choppedBlocks.add(newBlocks.chopped);
+          let positionParams = { y: '-=30', ease: Power1.easeIn, onComplete: () => this.choppedBlocks.remove(newBlocks.chopped) };
+          let rotationParams = { delay: 0.05, x: 0.1, z: 0.1, y: Math.random() * 0.1 };
+          if (newBlocks.chopped.position[newBlocks.plane] > newBlocks.placed.position[newBlocks.plane]) {
+            positionParams[newBlocks.plane] = '+=' + (40 * Math.abs(newBlocks.direction));
+          } else { positionParams[newBlocks.plane] = '-=' + (40 * Math.abs(newBlocks.direction)); }
+          TweenLite.to(newBlocks.chopped.position, 1, positionParams);
+          TweenLite.to(newBlocks.chopped.rotation, 1, rotationParams);
+        }
+        this.addBlock();
+      }
+
+      addBlock() {
+        let lastBlock = this.blocks[this.blocks.length - 1];
+        if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) return this.endGame();
+        this.scoreContainer.innerHTML = String(this.blocks.length - 1);
+        let newBlock = new Block(lastBlock);
+        this.newBlocks.add(newBlock.mesh);
+        this.blocks.push(newBlock);
+        this.stage.setCamera(this.blocks.length * 2);
+        if (this.blocks.length >= 5) this.instructions.classList.add('hide');
+      }
+
+      endGame() { this.updateState(this.STATES.ENDED); }
+
+      tick() {
+        this.blocks[this.blocks.length - 1].tick();
+        this.stage.render();
+        requestAnimationFrame(() => { this.tick(); });
+      }
+    }
+
+    let game = new Game();
+
+    // ===================== Social panel =====================
+    document.addEventListener('DOMContentLoaded', () => {
+      const panel = document.querySelector('.social-panel');
+      const openBtn = document.querySelector('.open-social');
+      const closeBtn = document.querySelector('.close-btn');
+
+      openBtn.addEventListener('click', () => panel.classList.add('open'));
+      closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+    });
+  </script>
+</body>
+
+</html>
