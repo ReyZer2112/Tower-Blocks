@@ -255,11 +255,13 @@
 <style>
   /* Faqat emoji tugmasini nusxalashni bloklash */
   .open-social {
-    -webkit-user-select: none;  /* Chrome, Safari */
-    -moz-user-select: none;     /* Firefox */
-    -ms-user-select: none;      /* IE10+ */
-    user-select: none;          /* standart */
-  }
+  -webkit-tap-highlight-color: transparent; /* Mobil Chrome highlightini olib tashlaydi */
+  outline: none;                            /* Focus atrofidagi chiziqni olib tashlaydi */
+  user-select: none;                        /* Matn tanlashni bloklaydi */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
 </style>
 
 <script>
@@ -270,6 +272,10 @@
     e.preventDefault(); // nusxa olishni to‘xtatadi
     alert("📢 Bu tugmani nusxa olish mumkin emas!");
   });
+  openBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+});
+
 </script>
 
 
