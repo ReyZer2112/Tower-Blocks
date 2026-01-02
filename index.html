@@ -23,6 +23,26 @@
       height: 100%;
     }
 
+/* Barcha elementlar uchun tanlashni bloklash */
+* {
+  -webkit-tap-highlight-color: transparent; /* Mobil brauzerlarda bosgandagi ko'k rangni yo'qotadi */
+  -webkit-touch-callout: none;              /* iOS Safari-da kontekst menyuni bloklaydi */
+  -webkit-user-select: none;                /* Chrome, Safari, Opera */
+  -khtml-user-select: none;                 /* Konqueror HTML */
+  -moz-user-select: none;                   /* Firefox */
+  -ms-user-select: none;                    /* Internet Explorer/Edge */
+  user-select: none;                        /* Standart */
+}
+
+/* Faqat input yoki textarea bo'lsa, ularda yozish imkonini qoldirish uchun (agar kerak bo'lsa) */
+input, textarea {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
     #container #score {
       position: absolute;
       top: 20px;
@@ -195,18 +215,25 @@
     }
 
     .open-social {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      z-index: 99999;
-      background: #333344;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      cursor: pointer;
-      font-size: 14px;
-    }
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  font-size: 30px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  padding: 8px;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+
+  /* NUSXALASH VA KO'K RANGGA QARSHI: */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: none; /* Fokus bo'lgandagi ramkani ham olib tashlaydi */
+}
   </style>
 </head>
 
@@ -255,13 +282,11 @@
 <style>
   /* Faqat emoji tugmasini nusxalashni bloklash */
   .open-social {
-  -webkit-tap-highlight-color: transparent; /* Mobil Chrome highlightini olib tashlaydi */
-  outline: none;                            /* Focus atrofidagi chiziqni olib tashlaydi */
-  user-select: none;                        /* Matn tanlashni bloklaydi */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
+    -webkit-user-select: none;  /* Chrome, Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE10+ */
+    user-select: none;          /* standart */
+  }
 </style>
 
 <script>
@@ -272,10 +297,6 @@
     e.preventDefault(); // nusxa olishni to‘xtatadi
     alert("📢 Bu tugmani nusxa olish mumkin emas!");
   });
-  openBtn.addEventListener('touchstart', e => {
-  e.preventDefault();
-});
-
 </script>
 
 
